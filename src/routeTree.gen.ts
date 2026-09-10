@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ListaDePresentesRouteImport } from './routes/lista-de-presentes'
 import { Route as OCasamentoRouteImport } from './routes/o-casamento'
+import { Route as RsvpIndexRouteImport } from './routes/rsvp.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const OCasamentoRoute = OCasamentoRouteImport.update({
   path: '/o-casamento',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RsvpIndexRoute = RsvpIndexRouteImport.update({
+  id: '/rsvp/',
+  path: '/rsvp/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
+  '/rsvp/': typeof RsvpIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
+  '/rsvp': typeof RsvpIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
+  '/rsvp/': typeof RsvpIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/lista-de-presentes' | '/o-casamento'
+  fullPaths: '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/lista-de-presentes' | '/o-casamento'
-  id: '__root__' | '/' | '/lista-de-presentes' | '/o-casamento'
+  to: '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp'
+  id: '__root__' | '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ListaDePresentesRoute: typeof ListaDePresentesRoute
   OCasamentoRoute: typeof OCasamentoRoute
+  RsvpIndexRoute: typeof RsvpIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OCasamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rsvp/': {
+      id: '/rsvp/'
+      path: '/rsvp'
+      fullPath: '/rsvp/'
+      preLoaderRoute: typeof RsvpIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ListaDePresentesRoute: ListaDePresentesRoute,
   OCasamentoRoute: OCasamentoRoute,
+  RsvpIndexRoute: RsvpIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
