@@ -10,15 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ListaDePresentesRouteImport } from './routes/lista-de-presentes'
 import { Route as OCasamentoRouteImport } from './routes/o-casamento'
 import { Route as RsvpIndexRouteImport } from './routes/rsvp.index'
 import { Route as RsvpCodigoRouteImport } from './routes/rsvp.$codigo'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntrarRoute = EntrarRouteImport.update({
@@ -46,6 +52,11 @@ const RsvpCodigoRoute = RsvpCodigoRouteImport.update({
   path: '/rsvp/$codigo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/o-casamento': typeof OCasamentoRoute
   '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp/': typeof RsvpIndexRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,15 +74,18 @@ export interface FileRoutesByTo {
   '/o-casamento': typeof OCasamentoRoute
   '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp': typeof RsvpIndexRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
   '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp/': typeof RsvpIndexRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +96,7 @@ export interface FileRouteTypes {
     | '/o-casamento'
     | '/rsvp/$codigo'
     | '/rsvp/'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,18 +105,22 @@ export interface FileRouteTypes {
     | '/o-casamento'
     | '/rsvp/$codigo'
     | '/rsvp'
+    | '/admin'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/entrar'
     | '/lista-de-presentes'
     | '/o-casamento'
     | '/rsvp/$codigo'
     | '/rsvp/'
+    | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   EntrarRoute: typeof EntrarRoute
   ListaDePresentesRoute: typeof ListaDePresentesRoute
   OCasamentoRoute: typeof OCasamentoRoute
@@ -115,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entrar': {
@@ -152,11 +179,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RsvpCodigoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   EntrarRoute: EntrarRoute,
   ListaDePresentesRoute: ListaDePresentesRoute,
   OCasamentoRoute: OCasamentoRoute,
