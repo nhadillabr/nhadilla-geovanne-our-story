@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ListaDePresentesRouteImport } from './routes/lista-de-presentes'
 import { Route as OCasamentoRouteImport } from './routes/o-casamento'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ListaDePresentesRoute = ListaDePresentesRouteImport.update({
+  id: '/lista-de-presentes',
+  path: '/lista-de-presentes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OCasamentoRoute = OCasamentoRouteImport.update({
@@ -25,27 +31,31 @@ const OCasamentoRoute = OCasamentoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/o-casamento'
+  fullPaths: '/' | '/lista-de-presentes' | '/o-casamento'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/o-casamento'
-  id: '__root__' | '/' | '/o-casamento'
+  to: '/' | '/lista-de-presentes' | '/o-casamento'
+  id: '__root__' | '/' | '/lista-de-presentes' | '/o-casamento'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ListaDePresentesRoute: typeof ListaDePresentesRoute
   OCasamentoRoute: typeof OCasamentoRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lista-de-presentes': {
+      id: '/lista-de-presentes'
+      path: '/lista-de-presentes'
+      fullPath: '/lista-de-presentes'
+      preLoaderRoute: typeof ListaDePresentesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/o-casamento': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ListaDePresentesRoute: ListaDePresentesRoute,
   OCasamentoRoute: OCasamentoRoute,
 }
 export const routeTree = rootRouteImport
