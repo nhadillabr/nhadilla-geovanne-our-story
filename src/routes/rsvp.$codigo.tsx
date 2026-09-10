@@ -20,7 +20,7 @@ export const Route = createFileRoute("/rsvp/$codigo")({
   }),
   loader: async ({ params }) => {
     const res = await obterConvidado({ data: { codigo: params.codigo } });
-    if (!res.ok) throw notFound();
+    if (!res.encontrado) throw notFound();
     return res.convidado;
   },
   errorComponent: () => (
