@@ -17,6 +17,7 @@ import { Route as OCasamentoRouteImport } from './routes/o-casamento'
 import { Route as RsvpIndexRouteImport } from './routes/rsvp.index'
 import { Route as RsvpCodigoRouteImport } from './routes/rsvp.$codigo'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminPresentesRouteImport } from './routes/_authenticated/admin.presentes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -57,6 +58,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminPresentesRoute =
+  AuthenticatedAdminPresentesRouteImport.update({
+    id: '/admin/presentes',
+    path: '/admin/presentes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/o-casamento': typeof OCasamentoRoute
   '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp/': typeof RsvpIndexRoute
+  '/admin/presentes': typeof AuthenticatedAdminPresentesRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
   '/o-casamento': typeof OCasamentoRoute
   '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp': typeof RsvpIndexRoute
+  '/admin/presentes': typeof AuthenticatedAdminPresentesRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -85,6 +94,7 @@ export interface FileRoutesById {
   '/o-casamento': typeof OCasamentoRoute
   '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp/': typeof RsvpIndexRoute
+  '/_authenticated/admin/presentes': typeof AuthenticatedAdminPresentesRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/o-casamento'
     | '/rsvp/$codigo'
     | '/rsvp/'
+    | '/admin/presentes'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/o-casamento'
     | '/rsvp/$codigo'
     | '/rsvp'
+    | '/admin/presentes'
     | '/admin'
   id:
     | '__root__'
@@ -115,6 +127,7 @@ export interface FileRouteTypes {
     | '/o-casamento'
     | '/rsvp/$codigo'
     | '/rsvp/'
+    | '/_authenticated/admin/presentes'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -186,14 +199,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/presentes': {
+      id: '/_authenticated/admin/presentes'
+      path: '/admin/presentes'
+      fullPath: '/admin/presentes'
+      preLoaderRoute: typeof AuthenticatedAdminPresentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminPresentesRoute: typeof AuthenticatedAdminPresentesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminPresentesRoute: AuthenticatedAdminPresentesRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
