@@ -1,7 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { navegacao, wedding } from "@/config/wedding";
+import { wedding } from "@/config/wedding";
+
+const links = [
+  { label: "Home", to: "/" as const },
+  { label: "O Casamento", to: "/o-casamento" as const },
+  { label: "Lista de Presentes", to: "/lista-de-presentes" as const },
+];
 
 export function SiteHeader() {
   const [aberto, setAberto] = useState(false);
@@ -18,7 +24,7 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-10 md:flex">
-          {navegacao.map((item) => (
+          {links.map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -43,14 +49,14 @@ export function SiteHeader() {
           className="p-2 text-foreground md:hidden"
           onClick={() => setAberto((v) => !v)}
         >
-          {aberto ? <Menu className="size-5 rotate-90" /> : <Menu className="size-5" />}
+          {aberto ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
       </div>
 
       {aberto && (
         <div className="border-t border-border/60 bg-background md:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4">
-            {navegacao.map((item) => (
+            {links.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -77,8 +83,4 @@ export function SiteHeader() {
       )}
     </header>
   );
-}
-
-export function CloseIconUnused() {
-  return <X />;
 }
