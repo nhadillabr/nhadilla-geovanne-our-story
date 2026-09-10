@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ListaDePresentesRouteImport } from './routes/lista-de-presentes'
 import { Route as OCasamentoRouteImport } from './routes/o-casamento'
 import { Route as RsvpIndexRouteImport } from './routes/rsvp.index'
+import { Route as RsvpCodigoRouteImport } from './routes/rsvp.$codigo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,17 +35,24 @@ const RsvpIndexRoute = RsvpIndexRouteImport.update({
   path: '/rsvp/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RsvpCodigoRoute = RsvpCodigoRouteImport.update({
+  id: '/rsvp/$codigo',
+  path: '/rsvp/$codigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
+  '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp/': typeof RsvpIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
+  '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp': typeof RsvpIndexRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,29 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/lista-de-presentes': typeof ListaDePresentesRoute
   '/o-casamento': typeof OCasamentoRoute
+  '/rsvp/$codigo': typeof RsvpCodigoRoute
   '/rsvp/': typeof RsvpIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp/'
+  fullPaths:
+    '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp/$codigo' | '/rsvp/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp'
-  id: '__root__' | '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp/'
+  to: '/' | '/lista-de-presentes' | '/o-casamento' | '/rsvp/$codigo' | '/rsvp'
+  id:
+    | '__root__'
+    | '/'
+    | '/lista-de-presentes'
+    | '/o-casamento'
+    | '/rsvp/$codigo'
+    | '/rsvp/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ListaDePresentesRoute: typeof ListaDePresentesRoute
   OCasamentoRoute: typeof OCasamentoRoute
+  RsvpCodigoRoute: typeof RsvpCodigoRoute
   RsvpIndexRoute: typeof RsvpIndexRoute
 }
 
@@ -99,6 +116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RsvpIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rsvp/$codigo': {
+      id: '/rsvp/$codigo'
+      path: '/rsvp/$codigo'
+      fullPath: '/rsvp/$codigo'
+      preLoaderRoute: typeof RsvpCodigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -106,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ListaDePresentesRoute: ListaDePresentesRoute,
   OCasamentoRoute: OCasamentoRoute,
+  RsvpCodigoRoute: RsvpCodigoRoute,
   RsvpIndexRoute: RsvpIndexRoute,
 }
 export const routeTree = rootRouteImport
