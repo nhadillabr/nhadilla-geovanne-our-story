@@ -15,6 +15,13 @@
       "when": 1789127469320,
       "tag": "0001_gifts_store_status_guest_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789127505615,
+      "tag": "0002_gift_images_storage_policies",
+      "breakpoints": true
     }
   ]
 }
