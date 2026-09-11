@@ -10,7 +10,25 @@ export type Gift = {
   imagem: string | null;
   categoria: string;
   url: string | null;
+  loja: string | null;
+  status: "disponivel" | "reservado" | "oculto";
 };
+
+/** Imagens enviadas pelo painel ficam no bucket privado e recebem URL assinada. */
+export async function assinarImagens<T extends { imagem: string | null }>(itens: T[]) {
+  const paths = itens
+    .map((i) => i.imagem)
+    .filter((v): v is string => Boolean(v) && !/^https?:\/\//i.test(v!));
+  if (paths.length === 0) return itens;
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.storage.from("gift-images").createSignedUrls(paths, 60 * 60);
+  const mapa = new Map((data ?? []).map((d) => [d.path, d.signedUrl]));
+
+  return itens.map((i) =>
+    i.imagem && mapa.has(i.imagem) ? { ...i, imagem: mapa.get(i.imagem) ?? null } : i,
+  );
+}
 
 export const listarPresentes = createServerFn({ method: "GET" }).handler(async () => {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -30,11 +48,12 @@ export const listarPresentes = createServerFn({ method: "GET" }).handler(async (
 
   const { data, error } = await supabasePublic
     .from("gifts")
-    .select("id, nome, descricao, preco, imagem, categoria, url")
+    .select("id, nome, descricao, preco, imagem, categoria, url, loja, status")
     .eq("ativo", true)
+    .neq("status", "oculto")
     .order("ordem", { ascending: true })
     .order("nome", { ascending: true });
 
   if (error) return [] as Gift[];
-  return (data ?? []) as Gift[];
+  return (await assinarImagens((data ?? []) as Gift[])) as Gift[];
 });
