@@ -22,9 +22,11 @@ export type Database = {
           descricao: string | null
           id: string
           imagem: string | null
+          loja: string | null
           nome: string
           ordem: number
           preco: number | null
+          status: Database["public"]["Enums"]["gift_status"]
           updated_at: string
           url: string | null
         }
@@ -35,9 +37,11 @@ export type Database = {
           descricao?: string | null
           id?: string
           imagem?: string | null
+          loja?: string | null
           nome: string
           ordem?: number
           preco?: number | null
+          status?: Database["public"]["Enums"]["gift_status"]
           updated_at?: string
           url?: string | null
         }
@@ -48,20 +52,65 @@ export type Database = {
           descricao?: string | null
           id?: string
           imagem?: string | null
+          loja?: string | null
           nome?: string
           ordem?: number
           preco?: number | null
+          status?: Database["public"]["Enums"]["gift_status"]
           updated_at?: string
           url?: string | null
         }
         Relationships: []
+      }
+      guest_members: {
+        Row: {
+          confirmado: boolean
+          created_at: string
+          guest_id: string
+          id: string
+          nome: string
+          ordem: number
+          respondido: boolean
+          updated_at: string
+        }
+        Insert: {
+          confirmado?: boolean
+          created_at?: string
+          guest_id: string
+          id?: string
+          nome: string
+          ordem?: number
+          respondido?: boolean
+          updated_at?: string
+        }
+        Update: {
+          confirmado?: boolean
+          created_at?: string
+          guest_id?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          respondido?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_members_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       guests: {
         Row: {
           codigo: string
           created_at: string
           data_confirmacao: string | null
+          grupo: string | null
           id: string
+          max_pessoas: number
           nome: string
           observacoes: string | null
           status: Database["public"]["Enums"]["rsvp_status"]
@@ -71,7 +120,9 @@ export type Database = {
           codigo?: string
           created_at?: string
           data_confirmacao?: string | null
+          grupo?: string | null
           id?: string
+          max_pessoas?: number
           nome: string
           observacoes?: string | null
           status?: Database["public"]["Enums"]["rsvp_status"]
@@ -81,7 +132,9 @@ export type Database = {
           codigo?: string
           created_at?: string
           data_confirmacao?: string | null
+          grupo?: string | null
           id?: string
+          max_pessoas?: number
           nome?: string
           observacoes?: string | null
           status?: Database["public"]["Enums"]["rsvp_status"]
@@ -125,6 +178,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin"
+      gift_status: "disponivel" | "reservado" | "oculto"
       rsvp_status: "pendente" | "confirmado" | "nao_comparecera"
     }
     CompositeTypes: {
@@ -254,6 +308,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin"],
+      gift_status: ["disponivel", "reservado", "oculto"],
       rsvp_status: ["pendente", "confirmado", "nao_comparecera"],
     },
   },

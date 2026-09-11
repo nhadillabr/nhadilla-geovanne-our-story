@@ -15,13 +15,26 @@ export function RsvpConvite({ inicial }: { inicial: GuestPublic }) {
   const [convidado, setConvidado] = useState(inicial);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState<"confirmado" | "nao_comparecera" | null>(null);
+  const [selecionados, setSelecionados] = useState<string[]>(
+    inicial.status === "pendente"
+      ? inicial.membros.map((m) => m.id)
+      : inicial.membros.filter((m) => m.confirmado).map((m) => m.id),
+  );
   const responder = useServerFn(responderRsvp);
+
+  const temAcompanhantes = convidado.membros.length > 0;
 
   async function enviar(status: "confirmado" | "nao_comparecera") {
     setErro(null);
     setEnviando(status);
     try {
-      const res = await responder({ data: { codigo: convidado.codigo, status } });
+      const res = await responder({
+        data: {
+          codigo: convidado.codigo,
+          status,
+          presentes: status === "confirmado" ? selecionados : [],
+        },
+      });
       if (res.ok) setConvidado(res.convidado);
       else setErro("Não encontramos este convite.");
     } catch {
@@ -32,6 +45,7 @@ export function RsvpConvite({ inicial }: { inicial: GuestPublic }) {
   }
 
   const respondido = convidado.status !== "pendente";
+  const titulo = convidado.grupo ? convidado.grupo : convidado.nome;
 
   return (
     <div className="mx-auto max-w-2xl px-6 text-center">
@@ -39,13 +53,16 @@ export function RsvpConvite({ inicial }: { inicial: GuestPublic }) {
         Confirmação de presença
       </p>
       <h1 className="mt-6 font-serif text-4xl text-foreground md:text-5xl">
-        Olá, {convidado.nome}.
+        Encontramos seu convite.
       </h1>
+      <p className="mt-4 font-serif text-2xl text-foreground/80">{titulo}</p>
       <div className="rule-gold mx-auto my-8" />
 
       {!respondido && (
         <p className="text-[15px] leading-relaxed text-muted-foreground">
-          Será uma alegria ter você conosco para celebrar esse momento tão especial.
+          {temAcompanhantes
+            ? "Será uma alegria ter vocês conosco para celebrar esse momento tão especial."
+            : "Será uma alegria ter você conosco para celebrar esse momento tão especial."}
         </p>
       )}
 
@@ -68,6 +85,37 @@ export function RsvpConvite({ inicial }: { inicial: GuestPublic }) {
         </div>
       )}
 
+      {temAcompanhantes && convidado.status !== "nao_comparecera" && (
+        <div className="mx-auto mt-10 max-w-sm text-left">
+          <p className="text-center text-[11px] tracking-editorial text-muted-foreground uppercase">
+            Quem estará presente?
+          </p>
+          <ul className="mt-5 space-y-3">
+            {convidado.membros.map((m) => (
+              <li key={m.id}>
+                <label className="flex items-center gap-3 border-b border-border/60 pb-3 text-[15px] text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={selecionados.includes(m.id)}
+                    onChange={(e) =>
+                      setSelecionados((s) =>
+                        e.target.checked ? [...s, m.id] : s.filter((id) => id !== m.id),
+                      )
+                    }
+                    className="h-4 w-4 accent-[var(--color-primary)]"
+                  />
+                  {m.nome}
+                </label>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-[12px] text-muted-foreground">
+            Este convite permite até {convidado.max_pessoas}{" "}
+            {convidado.max_pessoas === 1 ? "pessoa" : "pessoas"}.
+          </p>
+        </div>
+      )}
+
       <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
         <button
           type="button"
@@ -79,7 +127,11 @@ export function RsvpConvite({ inicial }: { inicial: GuestPublic }) {
               : "border border-primary text-primary hover:bg-primary hover:text-primary-foreground"
           }`}
         >
-          {enviando === "confirmado" ? "Registrando…" : "Confirmar minha presença"}
+          {enviando === "confirmado"
+            ? "Registrando…"
+            : temAcompanhantes
+              ? "Sim, estaremos presentes"
+              : "Sim, estarei presente"}
         </button>
         <button
           type="button"
@@ -91,7 +143,7 @@ export function RsvpConvite({ inicial }: { inicial: GuestPublic }) {
               : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
           }`}
         >
-          {enviando === "nao_comparecera" ? "Registrando…" : "Não poderei comparecer"}
+          {enviando === "nao_comparecera" ? "Registrando…" : "Infelizmente não poderei comparecer"}
         </button>
       </div>
 
