@@ -4,10 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { PageShell } from "@/components/page-shell";
 import { categoriasPresentes } from "@/config/wedding";
+import { supabase } from "@/integrations/supabase/client";
 import {
   listarPresentesAdmin,
   salvarPresente,
   excluirPresente,
+  removerImagemPresente,
+  urlImagemPresente,
   type AdminGift,
 } from "@/lib/admin.functions";
 
@@ -32,9 +35,12 @@ type Form = {
   descricao: string;
   preco: string;
   imagem: string;
+  imagemUrl: string;
   categoria: string;
+  loja: string;
   url: string;
   ativo: boolean;
+  status: "disponivel" | "reservado" | "oculto";
   ordem: string;
 };
 
@@ -43,9 +49,12 @@ const vazio: Form = {
   descricao: "",
   preco: "",
   imagem: "",
+  imagemUrl: "",
   categoria: categoriasPresentes[0] ?? "Casa",
+  loja: "",
   url: "",
   ativo: true,
+  status: "disponivel",
   ordem: "0",
 };
 
@@ -53,6 +62,8 @@ function AdminPresentes() {
   const listar = useServerFn(listarPresentesAdmin);
   const salvar = useServerFn(salvarPresente);
   const excluir = useServerFn(excluirPresente);
+  const removerImagem = useServerFn(removerImagemPresente);
+  const assinarUrl = useServerFn(urlImagemPresente);
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -63,6 +74,12 @@ function AdminPresentes() {
   const [form, setForm] = useState<Form>(vazio);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
+
+  const presentes = data ?? [];
+  const total = presentes.length;
+  const disponiveis = presentes.filter((p) => p.status === "disponivel" && p.ativo).length;
+  const reservados = presentes.filter((p) => p.status === "reservado").length;
 
   function editar(p: AdminGift) {
     setForm({
@@ -71,12 +88,47 @@ function AdminPresentes() {
       descricao: p.descricao ?? "",
       preco: p.preco === null ? "" : String(p.preco),
       imagem: p.imagem ?? "",
+      imagemUrl: p.imagemUrl ?? "",
       categoria: p.categoria,
+      loja: p.loja ?? "",
       url: p.url ?? "",
       ativo: p.ativo,
+      status: p.status,
       ordem: String(p.ordem),
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function enviarImagem(file: File) {
+    setErro(null);
+    setEnviandoImagem(true);
+    try {
+      const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase();
+      const path = `presentes/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("gift-images")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+
+      const anterior = form.imagem;
+      const { url } = await assinarUrl({ data: { path } });
+      setForm((f) => ({ ...f, imagem: path, imagemUrl: url ?? "" }));
+      if (anterior && !/^https?:\/\//i.test(anterior)) {
+        await removerImagem({ data: { path: anterior } });
+      }
+    } catch {
+      setErro("Não foi possível enviar a imagem. Tente novamente.");
+    } finally {
+      setEnviandoImagem(false);
+    }
+  }
+
+  async function limparImagem() {
+    const anterior = form.imagem;
+    setForm((f) => ({ ...f, imagem: "", imagemUrl: "" }));
+    if (anterior && !/^https?:\/\//i.test(anterior)) {
+      await removerImagem({ data: { path: anterior } });
+    }
   }
 
   async function enviar() {
@@ -88,11 +140,13 @@ function AdminPresentes() {
           ...(form.id ? { id: form.id } : {}),
           nome: form.nome.trim(),
           descricao: form.descricao.trim() || null,
-          preco: form.preco.trim() === "" ? null : Number(form.preco),
+          preco: form.preco.trim() === "" ? null : Number(form.preco.replace(",", ".")),
           imagem: form.imagem.trim(),
           categoria: form.categoria.trim(),
+          loja: form.loja.trim() || null,
           url: form.url.trim(),
           ativo: form.ativo,
+          status: form.status,
           ordem: Number(form.ordem) || 0,
         },
       });
@@ -126,6 +180,19 @@ function AdminPresentes() {
           >
             Convidados
           </Link>
+        </div>
+
+        <div className="mt-10 grid grid-cols-3 gap-6 border-y border-border/60 py-6 text-center">
+          {[
+            { label: "Cadastrados", valor: total },
+            { label: "Disponíveis", valor: disponiveis },
+            { label: "Reservados", valor: reservados },
+          ].map((i) => (
+            <div key={i.label}>
+              <p className="font-serif text-3xl text-foreground">{i.valor}</p>
+              <p className={rotulo}>{i.label}</p>
+            </div>
+          ))}
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-6 border border-border/70 p-8 md:grid-cols-2">
@@ -180,6 +247,32 @@ function AdminPresentes() {
               ))}
             </datalist>
           </div>
+          <div>
+            <label className={rotulo} htmlFor="g-loja">
+              Loja
+            </label>
+            <input
+              id="g-loja"
+              className={campo}
+              value={form.loja}
+              onChange={(e) => setForm({ ...form, loja: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className={rotulo} htmlFor="g-status">
+              Status
+            </label>
+            <select
+              id="g-status"
+              className={campo}
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value as Form["status"] })}
+            >
+              <option value="disponivel">Disponível</option>
+              <option value="reservado">Reservado</option>
+              <option value="oculto">Oculto</option>
+            </select>
+          </div>
           <div className="md:col-span-2">
             <label className={rotulo} htmlFor="g-url">
               Link da loja (https://…)
@@ -191,17 +284,50 @@ function AdminPresentes() {
               onChange={(e) => setForm({ ...form, url: e.target.value })}
             />
           </div>
+
           <div className="md:col-span-2">
-            <label className={rotulo} htmlFor="g-img">
-              Imagem (URL)
-            </label>
-            <input
-              id="g-img"
-              className={campo}
-              value={form.imagem}
-              onChange={(e) => setForm({ ...form, imagem: e.target.value })}
-            />
+            <p className={rotulo}>Imagem</p>
+            <div className="mt-3 flex flex-wrap items-center gap-5">
+              <div className="h-28 w-24 overflow-hidden bg-secondary">
+                {form.imagemUrl || /^https?:\/\//i.test(form.imagem) ? (
+                  <img
+                    src={form.imagemUrl || form.imagem}
+                    alt="Pré-visualização do presente"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-[9px] tracking-editorial text-muted-foreground uppercase">
+                    Sem foto
+                  </div>
+                )}
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void enviarImagem(f);
+                    e.target.value = "";
+                  }}
+                  className="block text-[13px] text-muted-foreground"
+                />
+                {enviandoImagem && (
+                  <p className="text-[12px] text-muted-foreground">Enviando imagem…</p>
+                )}
+                {form.imagem && (
+                  <button
+                    type="button"
+                    onClick={() => void limparImagem()}
+                    className="text-[11px] tracking-editorial text-destructive uppercase"
+                  >
+                    Remover imagem
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
+
           <div>
             <label className={rotulo} htmlFor="g-ordem">
               Ordem
@@ -248,12 +374,19 @@ function AdminPresentes() {
         {isLoading && <p className="mt-12 text-muted-foreground">Carregando…</p>}
 
         <ul className="mt-12 divide-y divide-border/60 border-y border-border/60">
-          {(data ?? []).map((p) => (
+          {presentes.map((p) => (
             <li key={p.id} className="flex flex-wrap items-center gap-4 py-5">
+              <div className="h-16 w-14 shrink-0 overflow-hidden bg-secondary">
+                {p.imagemUrl && (
+                  <img src={p.imagemUrl} alt={p.nome} className="h-full w-full object-cover" />
+                )}
+              </div>
               <div className="min-w-[220px] flex-1">
                 <p className="font-serif text-xl text-foreground">{p.nome}</p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  {p.categoria} · {p.ativo ? "visível" : "oculto"} · {p.url ? "com link" : "sem link"}
+                  {p.categoria}
+                  {p.loja ? ` · ${p.loja}` : ""} · {p.status} ·{" "}
+                  {p.ativo ? "visível" : "oculto"} · {p.url ? "com link" : "sem link"}
                 </p>
               </div>
               <button

@@ -131,6 +131,7 @@ function CardPresente({ presente }: { presente: Gift }) {
       </div>
       <p className="mt-5 text-[10px] tracking-editorial text-muted-foreground uppercase">
         {presente.categoria}
+        {presente.loja ? ` · ${presente.loja}` : ""}
       </p>
       <h2 className="mt-2 font-serif text-2xl text-foreground">{presente.nome}</h2>
       {presente.descricao && (
@@ -139,8 +140,17 @@ function CardPresente({ presente }: { presente: Gift }) {
         </p>
       )}
       {preco && <p className="mt-3 text-[13px] text-foreground">{preco}</p>}
+      {presente.status === "reservado" && (
+        <p className="mt-3 text-[10px] tracking-editorial text-primary uppercase">
+          Já presenteado
+        </p>
+      )}
       <div className="mt-5">
-        {presente.url ? (
+        {presente.status === "reservado" ? (
+          <span className="inline-block border border-border px-6 py-3 text-[11px] tracking-editorial text-muted-foreground/70 uppercase">
+            Indisponível
+          </span>
+        ) : presente.url ? (
           <a
             href={presente.url}
             target="_blank"
@@ -155,6 +165,7 @@ function CardPresente({ presente }: { presente: Gift }) {
           </span>
         )}
       </div>
+
     </article>
   );
 }
